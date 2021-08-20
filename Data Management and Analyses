@@ -1,0 +1,676 @@
+
+*******************************************
+*  MYANMAR 2019 FOREST GOER DATASET       *
+*  DATA MANAGED SYNTAX	                  *
+*  RESEARCH  						  	  *
+*  DATE STARTED: 07 JULY 2O21	  	  	  *
+*  DATE LAST UPDATED:    
+*  By Su Zin
+*******************************************
+**The following are commands for producing dummy tables for manuscript writing workshop.
+cd "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer"
+
+use "Data Management\Mapping_corrected (N=184).dta", clear
+
+*Type of provider
+tabout type_Nnew if practice_pro==1 using forestgoer2019_outputs_manuscript.xls, replace cells(freq col) format(0 1) clab(No. Col_%)
+
+gen education=q2
+recode education 3=2 4/5=3 6=4 96=2
+lab def edu 1"No formal education" 2"Primary and Secondary" 3"High School" 4"Bechelor and above",modify
+lab val education edu
+tab education
+
+tab education if practice_pro ==1
+
+*Age
+sum q1 if practice_pro ==1
+
+*Gender
+tab q3 if practice_pro ==1
+
+*Number of provider at facility
+sum q4 if practice_pro ==1
+
+*Malaria testing and drugs provision
+tab1 q8 q9 if practice_pro ==1
+ 
+*Data Reporting and name of organizations
+tab1 q13_n q12 if practice_pro==1 
+
+*Affliation and name of organizations
+tab1 q14_n q15_n if practice_pro==1
+clear
+
+***********************************************************************************************
+use "Data Management\Member_corrected.dta", clear
+gen age=q3a_4
+replace age=1 if q3a_4<5
+replace age=2 if (q3a_4>=5) & (q3a_4<=14)
+replace age=3 if (q3a_4>=15) & (q3a_4<=24)
+replace age=4 if (q3a_4>=25) & (q3a_4<=34)
+replace age=5 if (q3a_4>=35) & (q3a_4<=44)
+replace age=6 if (q3a_4>=45) & (q3a_4<=54)
+replace age=7 if q3a_4>=55
+
+lab def age 1"<5" 2"5-14" 3"15-24" 4"25-34" 5"35-44" 6"45-54" 7"55 and above"
+lab val age age
+tab age
+
+*Gender
+tab q3a_3
+clear
+
+************************************************************************************************
+use "Data Management\Section2&5_combined_(N=672)_corrected_modified.dta",clear
+
+**Recategorize Main income earner education
+gen q1_15_n=.
+recode q1_15_n .=1 if inlist(q1_15,"No schooling","Monastic or primary grade")
+recode q1_15_n .=2 if inlist(q1_15,"Middle Grade ","High Grade")
+recode q1_15_n .=3 if inlist(q1_15,"Passed matriculation","Diploma or degree")
+
+lab def q1_15_n 1"Illiterate and Primary education" 2"Secondary and High school education" /*
+*/ 3"Above high school education", replace
+lab var q1_15_n "Main income earner education"
+lab val q1_15_n q1_15_n
+tab q1_15_n
+
+tabout q1_15_n using forestgoer2019_outputs_manuscript.xls, replace cells(freq col) format(0 1) clab(No. Col_%)
+clear 
+***********************************************************************************************************
+**Whether HH head is a forest goer or not (N=479)
+use "Data Management\Member_corrected.dta",clear
+tab q3a_7 if q3a_4a==1
+tabout q3a_7 if q3a_4a==1 using forestgoer2019_outputs_manuscript.xls, append cells(freq col) format(0 1) clab(No. Col_%)
+
+clear
+******************************************************************************************************************
+**Access vs use of providers by forest goers (Table 2)
+use "Data Management\Section2&5_combined_access & use (N=672)_corrected.dta",clear
+
+*Previous febrile illness of forest goers*
+*Access
+tabout access_pubhos access_pubhcentre access_pharma access_bhs access_chw access_grs /*
+	*/ access_gp access_trad access_inf access_psi forest_goer using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+
+*Access for New version table
+*Recategorize 
+gen access_pubfacility=access_pubhos
+replace access_pubfacility=1 if access_pubhcentre==1
+
+gen access_psi_chw=access_chw
+replace access_psi_chw=1 if access_psi==1
+
+gen access_grs_trad_ifp=access_grs
+replace access_grs_trad_ifp=1 if access_trad==1
+replace access_grs_trad_ifp=1 if access_inf==1
+
+tabout access_pubfacility access_pharma access_bhs access_psi_chw access_grs_trad_ifp /*
+	*/ access_gp forest_goer using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+clear
+	
+*Use(Fever in the village)of forestgoers
+use "Data Management\Section2&5_combined_(N=672)_corrected_modified.dta",clear
+tabout tot_fever_tx_v_type_n if tot_fever_tx_v_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+clear
+
+*Use (Fever in the forest) of forest goers
+*Changing same as above to respective category
+gen tot_fever_tx_f_type_Nnew=tot_fever_tx_f_type_n
+replace tot_fever_tx_f_type_Nnew=8 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Basic Health Staff" | q2_5_other_type_Nnew=="Basic Health Staff")
+replace tot_fever_tx_f_type_Nnew=9 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="CHW/CHV/AMW"| q2_5_other_type_Nnew=="CHW/CHV/AMW")
+replace tot_fever_tx_f_type_Nnew=10 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="General Retailer"| q2_5_other_type_Nnew=="General Retailer")
+replace tot_fever_tx_f_type_Nnew=12 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Itinerant Durg Vendors/Informal Providers"| q2_5_other_type_Nnew=="Itinerant Durg Vendors/Informal Providers")
+replace tot_fever_tx_f_type_Nnew=14 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="PSI Provider (CHS/IFP)"| q2_5_other_type_Nnew=="PSI Provider (CHS/IFP)")
+replace tot_fever_tx_f_type_Nnew=7 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Pharmacy"| q2_5_other_type_Nnew=="Pharmacy")
+replace tot_fever_tx_f_type_Nnew=2 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Public Health Centre (RHC)"| q2_5_other_type_Nnew=="Public Health Centre (RHC)")
+replace tot_fever_tx_f_type_Nnew=1 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Public Hospital"| q2_5_other_type_Nnew=="Public Hospital")
+replace tot_fever_tx_f_type_Nnew=11 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Traditional Healers"| q2_5_other_type_Nnew=="Traditional Healers")
+replace tot_fever_tx_f_type_Nnew=4 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="Poly Clinic"| q2_5_other_type_Nnew=="Poly Clinic")
+replace tot_fever_tx_f_type_Nnew=5 if tot_fever_tx_f_type_Nnew==17 & (q2_5_code_type_Nnew=="GP Clinic"| q2_5_other_type_Nnew=="GP Clinic")
+replace tot_fever_tx_f_type_Nnew=q5_7b_type_tot if tot_fever_tx_f_type_Nnew==17 
+
+lab val tot_fever_tx_f_type_Nnew typelbl
+tab tot_fever_tx_f_type_Nnew if tot_fever_tx_f_geo_n==1 & forest_goer==1
+
+tabout tot_fever_tx_f_type_Nnew if tot_fever_tx_f_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+*Use (RDT in the village) of forest goers
+tabout tot_RDT_v_type_n if tot_RDT_v_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+
+*Use (RDT in the forest) of forest goers
+*Changing same as above to respective category
+gen tot_RDT_f_type_Nnew=tot_RDT_f_type_n
+replace tot_RDT_f_type_Nnew=8 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="Basic Health Staff" | q2_10b_other_type_Nnew=="Basic Health Staff")
+replace tot_RDT_f_type_Nnew=9 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="CHW/CHV/AMW"| q2_10b_other_type_Nnew=="CHW/CHV/AMW")
+replace tot_RDT_f_type_Nnew=12 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="Itinerant Durg Vendors/Informal Providers"| q2_10b_other_type_Nnew=="Itinerant Durg Vendors/Informal Providers")
+replace tot_RDT_f_type_Nnew=10 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="General Retailer"| q2_10b_other_type_Nnew=="General Retailer")
+replace tot_RDT_f_type_Nnew=14 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="PSI Provider (CHS/IFP)"| q2_10b_other_type_Nnew=="PSI Provider (CHS/IFP)")
+replace tot_RDT_f_type_Nnew=7 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="Pharmacy"| q2_10b_other_type_Nnew=="Pharmacy")
+replace tot_RDT_f_type_Nnew=2 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="Public Health Centre (RHC)"| q2_10b_other_type_Nnew=="Public Health Centre (RHC)")
+replace tot_RDT_f_type_Nnew=1 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="Public Hospital"| q2_10b_other_type_Nnew=="Public Hospital")
+replace tot_RDT_f_type_Nnew=5 if tot_RDT_f_type_Nnew==17 & (q2_10b_code_type_Nnew=="GP Clinic"| q2_10b_other_type_Nnew=="GP Clinic")
+replace tot_RDT_f_type_Nnew=q5_12b_type_tot if tot_RDT_f_type_Nnew==17 
+lab val tot_RDT_f_type_Nnew typelbl
+
+tabout tot_RDT_f_type_Nnew if tot_RDT_f_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+*Use for New version table
+*Recategorize Fever in the village
+gen tot_fever_tx_v_type_n_ver=tot_fever_tx_v_type_n
+replace tot_fever_tx_v_type_n_ver=1 if inlist(tot_fever_tx_v_type_n,1,2)
+replace tot_fever_tx_v_type_n_ver=2 if inlist(tot_fever_tx_v_type_n,3,4,5)
+replace tot_fever_tx_v_type_n_ver=3 if inlist(tot_fever_tx_v_type_n,7)
+replace tot_fever_tx_v_type_n_ver=4 if inlist(tot_fever_tx_v_type_n,8)
+replace tot_fever_tx_v_type_n_ver=5 if inlist(tot_fever_tx_v_type_n,9,14)
+replace tot_fever_tx_v_type_n_ver=6 if inlist(tot_fever_tx_v_type_n,10,11,12)
+replace tot_fever_tx_v_type_n_ver=. if inlist(tot_fever_tx_v_type_n,99)
+
+
+lab def use_n 1"Public Hospital/ Public Health Centre (RHC)" 2"Private facilities" 3"Pharmacy" 4"Basic Health Staff" /*
+*/ 5"CHW/CHV/AMW/PSI Provider (CHS/IFP)" 6"General Retailer/ Traditional healers/ Itinerant Durg Vendors/ Informal Providers" 99"Don't know", replace
+lab val tot_fever_tx_v_type_n_ver use_n
+
+*Recategorize Fever in the forest
+gen tot_fever_tx_f_type_n_ver=tot_fever_tx_f_type_Nnew
+replace tot_fever_tx_f_type_n_ver=1 if inlist(tot_fever_tx_f_type_Nnew,1,2)
+replace tot_fever_tx_f_type_n_ver=2 if inlist(tot_fever_tx_f_type_Nnew,3,4,5)
+replace tot_fever_tx_f_type_n_ver=3 if inlist(tot_fever_tx_f_type_Nnew,7)
+replace tot_fever_tx_f_type_n_ver=4 if inlist(tot_fever_tx_f_type_Nnew,8)
+replace tot_fever_tx_f_type_n_ver=5 if inlist(tot_fever_tx_f_type_Nnew,9,14)
+replace tot_fever_tx_f_type_n_ver=6 if inlist(tot_fever_tx_f_type_Nnew,10,11,12)
+replace tot_fever_tx_f_type_n_ver=. if inlist(tot_fever_tx_f_type_Nnew,99,96)
+
+lab val tot_fever_tx_f_type_n_ver use_n
+
+*Recategorize RDT in the village
+gen tot_RDT_v_type_n_ver=tot_RDT_v_type_n
+replace tot_RDT_v_type_n_ver=1 if inlist(tot_RDT_v_type_n,1,2)
+replace tot_RDT_v_type_n_ver=2 if inlist(tot_RDT_v_type_n,3,4,5)
+replace tot_RDT_v_type_n_ver=3 if inlist(tot_RDT_v_type_n,7)
+replace tot_RDT_v_type_n_ver=4 if inlist(tot_RDT_v_type_n,8)
+replace tot_RDT_v_type_n_ver=5 if inlist(tot_RDT_v_type_n,9,14)
+replace tot_RDT_v_type_n_ver=6 if inlist(tot_RDT_v_type_n,10,11,12)
+replace tot_RDT_v_type_n_ver=. if inlist(tot_RDT_v_type_n,99)
+
+lab val tot_RDT_v_type_n_ver use_n
+
+*Recategorize RDT in the forest
+gen tot_RDT_f_type_n_ver=tot_RDT_f_type_Nnew
+replace tot_RDT_f_type_n_ver=1 if inlist(tot_RDT_f_type_Nnew,1,2)
+replace tot_RDT_f_type_n_ver=2 if inlist(tot_RDT_f_type_Nnew,3,4,5)
+replace tot_RDT_f_type_n_ver=3 if inlist(tot_RDT_f_type_Nnew,7)
+replace tot_RDT_f_type_n_ver=4 if inlist(tot_RDT_f_type_Nnew,8)
+replace tot_RDT_f_type_n_ver=5 if inlist(tot_RDT_f_type_Nnew,9,14)
+replace tot_RDT_f_type_n_ver=6 if inlist(tot_RDT_f_type_Nnew,10,11,12)
+replace tot_RDT_f_type_n_ver=. if inlist(tot_RDT_f_type_Nnew,96,99)
+
+lab val tot_RDT_f_type_n_ver use_n
+
+*Exporting new version tables for Fever and RDT in the village and forest 
+tabout tot_fever_tx_v_type_n_ver if tot_fever_tx_v_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_fever_tx_f_type_n_ver if tot_fever_tx_f_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_RDT_v_type_n_ver if tot_RDT_v_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_RDT_f_type_n_ver if tot_RDT_f_geo_n==1 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+
+tabout tot_fever_tx_v_type_n_ver if tot_fever_tx_v_geo_n==2 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_fever_tx_f_type_n_ver if tot_fever_tx_f_geo_n==2 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_RDT_v_type_n_ver if tot_RDT_v_geo_n==2 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+tabout tot_RDT_f_type_n_ver if tot_RDT_f_geo_n==2 & forest_goer==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+	
+save "Data Management\Section2&5_combined_(N=672)_corrected_modified_with new var.dta",replace
+clear
+
+***************************************************************************************************
+*Recent febrile illness
+use "Data Management\Fever_(N=307).dta", clear
+
+*Access
+tab1 access_pubhos-access_psi if forest_goer==1 
+
+*New version table (recategorize) for access
+gen access_pubfacility=access_pubhos
+replace access_pubfacility=1 if access_pubhcentre==1
+
+gen access_psi_chw=access_chw
+replace access_psi_chw=1 if access_psi==1
+
+gen access_grs_trad_ifp=access_grs
+replace access_grs_trad_ifp=1 if access_trad==1
+replace access_grs_trad_ifp=1 if access_inf==1
+
+tabout access_pubfacility access_pharma access_bhs access_psi_chw access_grs_trad_ifp /*
+	*/ access_gp forest_goer using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+clear
+
+*Use
+use "Data Management\Section4_manage_with member ID.dta", clear
+tabout first_fever_tx_type if first_fever_tx_geo==1 & q3a_7==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+*New version table (recategorize) for use
+gen first_fever_tx_type_n_ver=first_fever_tx_type
+replace first_fever_tx_type_n_ver=1 if inlist(first_fever_tx_type,1,2)
+replace first_fever_tx_type_n_ver=2 if inlist(first_fever_tx_type,3,4,5)
+replace first_fever_tx_type_n_ver=3 if inlist(first_fever_tx_type,7)
+replace first_fever_tx_type_n_ver=4 if inlist(first_fever_tx_type,8)
+replace first_fever_tx_type_n_ver=5 if inlist(first_fever_tx_type,9,14)
+replace first_fever_tx_type_n_ver=6 if inlist(first_fever_tx_type,10,11,12)
+replace first_fever_tx_type_n_ver=. if inlist(first_fever_tx_type,99,96)
+
+lab def use_n 1"Public Hospital/ Public Health Centre (RHC)" 2"Private facilities" 3"Pharmacy" 4"Basic Health Staff" /*
+*/ 5"CHW/CHV/AMW/PSI Provider (CHS/IFP)" 6"General Retailer/ Traditional healers/ Itinerant Durg Vendors/ Informal Providers" 99"Don't know"
+lab val first_fever_tx_type_n_ver use_n
+
+tabout first_fever_tx_type_n_ver if first_fever_tx_geo==1 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+
+tabout first_fever_tx_type_n_ver if first_fever_tx_geo==2 using forestgoer2019_outputs_manuscript.xls, /*
+	*/ append cells(freq col) format(0 1) clab(No. Col_%)
+	
+clear
+*******************************************************************************************************
+ Recent febrile illness
+
+*Knowledge score (Section 2 & 5)
+
+*Section 5
+use "Data Management\Section 5 _corrected.dta",clear
+gen S5_mal_transmission=.
+replace S5_mal_transmission=1 if q5_3_9==1
+replace S5_mal_transmission=0 if q5_3_9!=1 & q5_3!=""
+lab def malaria_knowledge 1"correct" 0"incorrect"
+lab val S5_mal_transmission malaria_knowledge
+
+gen S5_mal_prevention=.
+replace S5_mal_prevention=1 if q5_5_2==1
+replace S5_mal_prevention=0 if q5_5_2!=1 & q5_5!=""
+lab val S5_mal_prevention malaria_knowledge
+save "Data Management\Section5_with knowledge score.dta",replace
+clear
+
+*Section 2
+use "Data Management\Section2&5_combined_(N=672)_corrected_modified.dta",clear
+gen S2_mal_transmission=.
+replace S2_mal_transmission=1 if q2_1_9=="Yes"
+replace S2_mal_transmission=0 if q2_1_9!="Yes" & q2_1!=""
+lab def malaria_knowledge 1"correct" 0"incorrect"
+lab val S2_mal_transmission malaria_knowledge
+
+gen S2_mal_prevention=.
+replace S2_mal_prevention=1 if q2_2_2=="Yes"
+replace S2_mal_prevention=0 if q2_2_2!="Yes" & q2_2!=""
+lab val S2_mal_prevention malaria_knowledge
+
+*Before merging
+count //672
+br // 177
+
+merge 1:1 member_uid using "Data Management\Section5_with knowledge score.dta", keepusing(S5_mal_transmission S5_mal_prevention) nogen
+
+*Before merging
+count //672
+br // 179
+
+gen tot_mal_transmission=S2_mal_transmission
+replace tot_mal_transmission=S5_mal_transmission if tot_mal_transmission==. 
+lab val tot_mal_transmission malaria_knowledge
+
+gen tot_mal_prevention=S2_mal_prevention
+replace tot_mal_prevention=S5_mal_prevention if tot_mal_prevention==. 
+lab val tot_mal_prevention malaria_knowledge
+
+tab1 tot_mal_transmission tot_mal_prevention if forest_goer==1
+save "Data Management\Section2&5_combined_(N=672)_corrected_modified.dta",replace
+clear
+****************************************************************************************************
+
+**Four Scenerios**
+use "C:\Users\mmthet\Population Services International\Writing Workshop 2021\Data and Output\Forest Goer fever_access and use_fever in vil.dta" 
+*creating access variable for each member*
+egen access=rowtotal( access_pubhos- access_psi )
+	 
+gen access2 = access
+recode access2 1/2=1 3/4=2 5/6=3
+la def access2 1"1 to 2 providers" 2"3 to 4 providers" 3"5 to 6 providers"
+la val access2 access2
+la var access2
+tab access2
+
+* recoding *
+gen rel_hhh=re_hhh
+ recode rel_hhh 2/max = 2
+ la def rel_hhh 1"Self" 2"family"
+ la val rel_hhh rel_hhh
+ la var rel_hhh
+ 
+ 
+* merging main income earner education *
+merge m:1 uid using "C:\Users\mmthet\Downloads\uid and main income earner education.dta"
+
+/* Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  (_merge==3)
+    -----------------------------------------
+	*//
+	
+rename q1_15_n inc_edu
+
+** Merge type & geo variables from sec & sec 5 merge data set*
+** Generating outcome variable *
+
+gen prov_choice = tot_fever_tx_v_type_n 
+ recode prov_choice 1=1 2=1 8=1 4=2 5=2 7=2 10=2 11=2 12=2 9=3 14=3 16=3 99=.
+ la def prov_choice 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 
+ la val prov_choice prov_choice
+ la var prov_choice
+ tab prov_choice
+ 
+ gen prove_choice2 = prov_choice
+replace  prove_choice2 =4 if tot_fever_tx_v_geo_n=2
+ la def prove_choice2 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 4"outside"
+ la val prove_choice2 prov_choice2
+ la var prove_choice2
+ tab prove_choice2
+ 
+* Running logistic regression for fever in village*
+mlogit prove_choice2 forest_goer gen_mem age_mem i.rel_hhh i.nationalquintile i.inc_edu i.access2 , base (3)
+clear 
+
+***************************************************************************************************************
+use "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\Forest Goer fever_access and use_fever in for.dta", clear 
+*creating access variable for each member*
+egen access=rowtotal( access_pubhos- access_psi )
+	 
+gen access2 = access
+recode access2 1/2=1 3/4=2 5/6=3
+la def access2 1"1 to 2 providers" 2"3 to 4 providers" 3"5 to 6 providers"
+la val access2 access2
+la var access2
+tab access2
+
+* recoding *
+gen rel_hhh=re_hhh
+ recode rel_hhh 2/max = 2
+ la def rel_hhh 1"Self" 2"family"
+ la val rel_hhh rel_hhh
+ la var rel_hhh
+ 
+ 
+* merging main income earner education *
+merge m:1 uid using "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\uid and main income earner education.dta"
+
+/* Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  (_merge==3)
+    -----------------------------------------
+	*//
+	
+rename q1_15_n inc_edu
+
+** Merge type & geo variables from sec 2 & sec 5 merge data set*
+merge 1:1 member_uid using "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Section2&5_combined_(N=672)_corrected_modified_with new var.dta", /*
+*/ keepusing(tot_fever_tx_f_type_Nnew tot_fever_tx_f_geo_n) nogen
+
+/*Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  
+    -----------------------------------------
+*// 
+
+** Generating outcome variable *
+
+gen prov_choice = tot_fever_tx_f_type_Nnew 
+ recode prov_choice 1=1 2=1 8=1 4=2 5=2 7=2 10=2 11=2 12=2 9=3 14=3 16=3 99=. 96=.
+ la def prov_choice 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 
+ la val prov_choice prov_choice
+ la var prov_choice
+ tab prov_choice
+ 
+ gen prove_choice2 = prov_choice
+replace  prove_choice2=4 if tot_fever_tx_f_geo_n==2
+ la def prove_choice2 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 4"outside"
+ la val prove_choice2 prove_choice2
+ la var prove_choice2
+ tab prove_choice2
+ 
+save "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Forest Goer fever_access and use_fever in for_with new var.dta",replace
+ 
+* Running logistic regression for fever in village*
+mlogit prove_choice2 forest_goer gen_mem age_mem i.rel_hhh i.nationalquintile i.inc_edu i.access2 , base (3)
+clear
+
+*************************************************************************************************************************************
+use "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\Forest Goer fever_access and use_rdt in vil.dta", clear
+*creating access variable for each member*
+egen access=rowtotal( access_pubhos- access_psi )
+	 
+gen access2 = access
+recode access2 1/2=1 3/4=2 5/6=3
+la def access2 1"1 to 2 providers" 2"3 to 4 providers" 3"5 to 6 providers"
+la val access2 access2
+la var access2
+tab access2
+
+* recoding *
+gen rel_hhh=re_hhh
+ recode rel_hhh 2/max = 2
+ la def rel_hhh 1"Self" 2"family"
+ la val rel_hhh rel_hhh
+ la var rel_hhh Self/family
+ 
+ 
+* merging main income earner education *
+merge m:1 uid using "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\uid and main income earner education.dta"
+
+/* Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  (_merge==3)
+    -----------------------------------------
+	*//
+	
+rename q1_15_n inc_edu
+
+** Merge type & geo variables from sec 2 & sec 5 merge data set*
+merge 1:1 member_uid using "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Section2&5_combined_(N=672)_corrected_modified_with new var.dta", /*
+*/ keepusing(tot_RDT_v_type_n tot_RDT_v_geo_n) nogen
+
+/*Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  
+    -----------------------------------------
+*// 
+
+** Generating outcome variable *
+
+gen prov_choice = tot_RDT_v_type_n 
+ recode prov_choice 1=1 2=1 8=1 4=2 5=2 7=2 10=2 11=2 12=2 9=3 14=3 16=3 99=. 96=.
+ la def prov_choice 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 
+ la val prov_choice prov_choice
+ la var prov_choice
+ tab prov_choice
+ 
+ gen prove_choice2 = prov_choice
+replace  prove_choice2=4 if tot_RDT_v_geo_n==2
+ la def prove_choice2 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 4"outside"
+ la val prove_choice2 prove_choice2
+ la var prove_choice2
+ tab prove_choice2
+ 
+save "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Forest Goer fever_access and use_rdt in vil_with new var.dta",replace
+ 
+* Running logistic regression for fever in village*
+mlogit prove_choice2 forest_goer gen_mem age_mem i.rel_hhh i.nationalquintile i.inc_edu i.access2 , base (3)
+clear
+
+******************************************************************************************************************
+use "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\Forest Goer fever_access and use_rdt in for.dta", clear 
+*creating access variable for each member*
+egen access=rowtotal( access_pubhos- access_psi )
+	 
+gen access2 = access
+recode access2 1/2=1 3/4=2 5/6=3
+la def access2 1"1 to 2 providers" 2"3 to 4 providers" 3"5 to 6 providers"
+la val access2 access2
+la var access2
+tab access2
+
+* recoding *
+gen rel_hhh=re_hhh
+ recode rel_hhh 2/max = 2
+ la def rel_hhh 1"Self" 2"family"
+ la val rel_hhh rel_hhh
+ la var rel_hhh Self/family
+ 
+ 
+* merging main income earner education *
+merge m:1 uid using "C:\Users\ssuzin\Desktop\Writing workshop\Dataset\uid and main income earner education.dta"
+
+/* Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  (_merge==3)
+    -----------------------------------------
+	*//
+	
+rename q1_15_n inc_edu
+
+** Merge type & geo variables from sec 2 & sec 5 merge data set*
+merge 1:1 member_uid using "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Section2&5_combined_(N=672)_corrected_modified_with new var.dta", /*
+*/ keepusing(tot_RDT_f_type_Nnew tot_RDT_f_geo_n) nogen
+
+/*Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                               672  
+    -----------------------------------------
+*// 
+
+** Generating outcome variable *
+
+gen prov_choice = tot_RDT_f_type_Nnew 
+ recode prov_choice 1=1 2=1 8=1 4=2 5=2 7=2 10=2 11=2 12=2 9=3 14=3 16=3 99=. 96=.
+ la def prov_choice 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 
+ la val prov_choice prov_choice
+ la var prov_choice prov_choice 
+ tab prov_choice
+ 
+ gen prove_choice2 = prov_choice
+replace  prove_choice2=4 if tot_RDT_f_geo_n==2
+ la def prove_choice2 1"Public fac" 2"Semi-private" 3" CHW/AMW/CHV" 4"outside"
+ la val prove_choice2 prove_choice2
+ la var prove_choice2 prove_choice2
+ tab prove_choice2
+ 
+save "D:\One Drive\Population Services International\Research unit - DATASETS\Forest Goer\Data Management\Forest Goer fever_access and use_rdt in for_with new var.dta",replace
+
+*******************************************
+*  MYANMAR 2019 FOREST GOER DATASET       *
+*  DATA ANALYSIS SYNTAX	                  *
+*  RESEARCH  						  	  *
+*  DATE STARTED: 07 JULY 2O21	  	  	  *
+*  DATE LAST UPDATED:    
+*  By Myat Noe
+*******************************************
+**** blogit output analysis** forest goer study**
+use "C:\Users\mntkhaing\Desktop\malaria health seeking\Forest Goer fever_access and use_fever in for_FG.dta", clear
+local prove_choice2 gen_mem rel_hhh  nationalquintile inc_edu2 access5
+foreach var of local prove_choice2 {
+	mlogit prove_choice2 i.`var' , base (3) 
+	mlogit, rrr
+	}
+mlogit prove_choice2 age_mem, base (3) 
+mlogit, rrr 
+mlogit prove_choice2 i.access5 , base (3) 
+mlogit, rrr 
+
+mlogit prove_choice2 i.tot_mal_transmission , base (3) rrr
+mlogit prove_choice2 i.tot_mal_prevention , base (3) rrr
+
+
+
+use "C:\Users\mntkhaing\Desktop\malaria health seeking\Forest Goer fever_access and use_fever in vil_FG.dta"
+local prove_choice2 gen_mem rel_hhh  nationalquintile inc_edu2 access5
+foreach var of local prove_choice2 {
+	mlogit prove_choice2 i.`var' , base (3) 
+	mlogit, rrr
+}
+
+mlogit prove_choice2 age_mem, base (3) 
+mlogit, rrr 
+
+mlogit prove_choice2 i.tot_mal_transmission , base (3) rrr
+mlogit prove_choice2 i.tot_mal_prevention , base (3) rrr
+
+
+use "C:\Users\mntkhaing\Desktop\malaria health seeking\Forest Goer fever_access and use_provider member hh (N=307).dta"
+tab1 forest_goer gen_mem age_mem rel_hhh nationalquintile inc_edu2 access5
+
+local prove_choice2 forest_goer gen_mem rel_hhh nationalquintile inc_edu2 access5
+foreach var of local prove_choice2 {
+	mlogit prove_choice2 i.`var' , base (3) 
+	mlogit, rrr
+}
+
+mlogit prove_choice2 age_mem, base (3) 
+mlogit, rrr 
+mlogit prove_choice2 i.tot_mal_transmission , base (3) rrr
+mlogit prove_choice2 i.tot_mal_prevention , base (3) rrr
+
+
+For RDT in Village, RDT in Forest
+use "C:\Users\mntkhaing\Desktop\malaria health seeking\Forest Goer fever_access and use_rdt in for_FG.dta", clear
+tab1 forest_goer gen_mem age_mem rel_hhh nationalquintile inc_edu2 access5
+local prove_choice3 gen_mem age_mem nationalquintile tot_mal_prevention access5
+foreach var of local prove_choice3 {
+	mlogit prove_choice3 i.`var' , base (2) 
+	mlogit, rrr
+}
+mlogit prove_choice3 age_mem, base (2) 
+mlogit, rrr 
+
+mlogit prove_choice3 i.rel_hhh , base (2) rrr
+mlogit prove_choice3 i.inc_edu2 , base (2) rrr
+mlogit prove_choice3 i.tot_mal_transmission , base (2) rrr
+
+
+use "C:\Users\mntkhaing\Desktop\malaria health seeking\Forest Goer fever_access and use_rdt in vil_FG.dta", clear
+tab1 forest_goer gen_mem age_mem rel_hhh nationalquintile inc_edu2 access5
+local prove_choice3 gen_mem nationalquintile tot_mal_prevention access5
+foreach var of local prove_choice3 {
+	mlogit prove_choice3 i.`var' , base (2) 
+	mlogit, rrr
+}
+
+mlogit prove_choice3 age_mem, base (2) 
+mlogit, rrr 
+
+mlogit prove_choice3 i.rel_hhh , base (2) rrr
+mlogit prove_choice3 i.inc_edu2 , base (2) rrr
+mlogit prove_choice3 i.tot_mal_transmission , base (2) rrr
+****//////////////////////////////////*********
+
+
